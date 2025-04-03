@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafetería - Registro y Menú</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --cafe-oscuro: #5D4037;
+            --cafe-medio: #8D6E63;
+            --crema: #FFF8E1;
+            --dorado: #FFD700;
+        }
+        
+        body {
+            background-color: var(--crema);
+            font-family: 'Arial', sans-serif;
+        }
+        
+        /* Estilos para ventanas */
+        .ventana {
+            display: none;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 70vh;
+        }
+        
+        .ventana-activa {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Barra de navegación */
+        .nav-ventanas {
+            background: var(--cafe-oscuro);
+            border-radius: 10px 10px 0 0;
+            padding: 15px;
+        }
+        
+        .nav-ventanas .nav-link {
+            color: white;
+            font-weight: bold;
+            margin: 0 10px;
+            border-radius: 5px;
+            padding: 8px 15px;
+        }
+        
+        .nav-ventanas .nav-link.active {
+            background: var(--dorado);
+            color: var(--cafe-oscuro);
+        }
+        
+        /* Productos */
+        .producto {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 0;
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .producto:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .producto-img {
+            height: 180px;
+            object-fit: cover;
+            width: 100%;
+        }
+        
+        /* Carrito */
+        .badge-carrito {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+        }
+        
+        /* Formularios */
+        .form-auth {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Ventana de Inicio (Login/Registro) -->
+    <div class="container py-5" id="ventana-inicio">
+        <div class="text-center mb-5">
+            <img src="logo/logo02222.jpg" 
+                 alt="logo" 
+                 style="width: 150px; border-radius: 50%;">
+            <h1 class="mt-3" style="color: var(--cafe-oscuro);">El mejor cafe para empezar tu dia</h1>
+        </div>
+        
+        <!-- Pestañas Login/Registro -->
+        <ul class="nav nav-tabs justify-content-center mb-4" id="authTabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#login">Iniciar Sesión</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#registro">Registrarse</a>
+            </li>
+        </ul>
+        
+        <div class="tab-content">
+            <!-- Login -->
+            <div class="tab-pane fade show active form-auth" id="login">
+                <h3 class="text-center mb-4">Iniciar Sesión</h3>
+                <form id="formLogin">
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn w-100" style="background-color: var(--cafe-oscuro); color: white;">
+                        Ingresar
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Registro -->
+            <div class="tab-pane fade form-auth" id="registro">
+                <h3 class="text-center mb-4">Crear Cuenta</h3>
+                <form id="formRegistro">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre Completo</label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Confirmar Contraseña</label>
+                        <input type="password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn w-100" style="background-color: var(--cafe-oscuro); color: white;">
+                        Registrarse
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Aplicación Principal (oculta inicialmente) -->
+    <div class="container" id="app-principal" style="display: none;">
+        <!-- Barra superior -->
+        <div class="d-flex justify-content-between align-items-center py-3">
+            <h4 style="color: var(--cafe-oscuro);">
+                <i class="fas fa-user-circle me-2"></i>
+                <span id="nombre-usuario">Usuario</span>
+            </h4>
+            <div>
+                <button class="btn btn-outline-cafe position-relative me-2" data-ventana="carrito">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="badge bg-danger badge-carrito" id="contador-carrito">0</span>
+                </button>
+                <button id="btn-logout" class="btn btn-outline-danger">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Navegación -->
+        <ul class="nav nav-ventanas mb-3">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" data-ventana="menu">
+                    <i class="fas fa-coffee me-2"></i>Menú
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-ventana="comentarios">
+                    <i class="fas fa-comments me-2"></i>Comentarios
+                </a>
+            </li>
+        </ul>
+        
+        <!-- Ventana del Menú -->
+        <div class="ventana ventana-activa" id="ventana-menu">
+            <h2 class="mb-4"><i class="fas fa-coffee me-2"></i>Nuestro Menú</h2>
+            
+            <div class="row">
+                <!-- Ejemplo de producto -->
+                <div class="col-md-4 mb-4">
+                    <div class="producto">
+                        <img src="productos/expreso.jpg" 
+                             class="producto-img" 
+                             alt="Café Expreso">
+                        <div class="p-3">
+                            <h5>Expreso</h5>
+                            <p class="text-muted">Intenso y aromático</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">$25.00</span>
+                                <button class="btn btn-sm agregar-carrito" 
+                                        style="background-color: var(--cafe-medio); color: white;"
+                                        data-producto="Expreso" 
+                                        data-precio="25.00"
+                                        data-imagen="./productos/expreso.jpg">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="producto">
+                        <img src="productos/cafemoka.jpg" 
+                             class="producto-img" 
+                             alt="cafemoka">
+                        <div class="p-3">
+                            <h7>cafemoka</h7>
+                            <p class="text-muted">Intenso y aromatico</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">$45.00</span>
+                                <button class="btn btn-sm agregar-carrito" 
+                                        style="background-color: var(--cafe-medio); color: rgb(66, 12, 12);"
+                                        data-producto="malteadas" 
+                                        data-precio="45.00"
+                                        data-imagen="./productos/cafemoka.jpg">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="producto">
+                        <img src="productos/malteadas.jpeg" 
+                             class="producto-img" 
+                             alt="malteadas">
+                        <div class="p-3">
+                            <h7>malteadas</h7>
+                            <p class="text-muted">fresa, vainilla y chocolate  </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">$45.00</span>
+                                <button class="btn btn-sm agregar-carrito" 
+                                        style="background-color: var(--cafe-medio); color: rgb(66, 12, 12);"
+                                        data-producto="malteadas" 
+                                        data-precio="45.00"
+                                        data-imagen="./productos/malteadas.jpeg">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="producto">
+                        <img src="productos/mocaccino-latte-vainilla.jpg" 
+                             class="producto-img" 
+                             alt="mocaccino">
+                        <div class="p-3">
+                            <h8>mocaccino</h8>
+                            <p class="text-muted">Intenso y aromático</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">$25.00</span>
+                                <button class="btn btn-sm agregar-carrito" 
+                                        style="background-color: var(--cafe-medio); color: rgb(66, 12, 12);"
+                                        data-producto="mocaccino" 
+                                        data-precio="25.00"
+                                        data-imagen="./productos/mocaccino-latte-vainilla.jpg">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="producto">
+                        <img src="productos/frape chocolatejpg.jpg" 
+                             class="producto-img" 
+                             alt="frape">
+                        <div class="p-3">
+                            <h9>frape</h9>
+                            <p class="text-muted">dulce y frio</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">$45.00</span>
+                                <button class="btn btn-sm agregar-carrito" 
+                                        style="background-color: var(--cafe-medio); color: rgb(66, 12, 12);"
+                                        data-producto="frape" 
+                                        data-precio="45.00"
+                                        data-imagen="./productos/frape chocolate.jpg">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="producto">
+                        <img src="productos/frape de gllaeta.jpg" 
+                             class="producto-img" 
+                             alt="frape galleta">
+                        <div class="p-3">
+                            <h8>frape galleta</h8>
+                            <p class="text-muted">dulce y frio</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">$55.00</span>
+                                <button class="btn btn-sm agregar-carrito" 
+                                        style="background-color: var(--cafe-medio); color: rgb(66, 12, 12);"
+                                        data-producto="frape galleta" 
+                                        data-precio="55.00"
+                                        data-imagen="./productos/frape de gllaeta.jpg">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="producto">
+                        <img src="productos/tenegro.webp" 
+                             class="producto-img" 
+                             alt="te negro">
+                        <div class="p-3">
+                            <h10>te negro </h10>
+                            <p class="text-muted">Intenso y aromático</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">$25.00</span>
+                                <button class="btn btn-sm agregar-carrito" 
+                                        style="background-color: var(--cafe-medio); color: rgb(66, 12, 12);"
+                                        data-producto="tenegro" 
+                                        data-precio="25.00"
+                                        data-imagen="./productos/tenegro.webp">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                   
+
+             
+                    <div class="producto">
+                        <img src="productos/croissant-.avif" 
+                             class="producto-img" 
+                             alt="croissant">
+                        <div class="p-3">
+                            <h12>croissant</h12>
+                            <p class="text-muted">Intenso y aromático</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">$20.00</span>
+                                <button class="btn btn-sm agregar-carrito" 
+                                        style="background-color: var(--cafe-medio); color: rgb(66, 12, 12);"
+                                        data-producto="croissant" 
+                                        data-precio="20.00"
+                                        data-imagen="./productos/croissant-.avif">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="producto">
+                        <img src="productos/jalletas.jpg" 
+                             class="productos-img" 
+                             alt="galletas">
+                        <div class="p-3">
+                            <h13>galletas</h13>
+                            <p class="text-muted">Intenso y aromático</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">$15.00</span>
+                                <button class="btn btn-sm agregar-carrito" 
+                                        style="background-color: var(--cafe-medio); color: rgb(66, 12, 12);"
+                                        data-producto="galletas" 
+                                        data-precio="15.00"
+                                        data-imagen="productos/galletas-destacada00.jpg">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+                </div>
+                <!-- Más productos... -->
+            </div>
+        </div>
+        
+        <!-- Ventana de Comentarios -->
+        <div class="ventana" id="ventana-comentarios">
+            <h2 class="mb-4"><i class="fas fa-comments me-2"></i>Comentarios</h2>
+            <form id="form-comentario" class="mb-4 p-4" style="background: white; border-radius: 10px;">
+                <div class="mb-3">
+                    <textarea class="form-control" rows="3" placeholder="Escribe tu comentario..." required></textarea>
+                </div>
+                <button type="submit" class="btn" style="background-color: var(--cafe-oscuro); color: white;">
+                    Enviar Comentario
+                </button>
+            </form>
+            
+            <div id="lista-comentarios">
+                <!-- Comentarios se cargarán aquí -->
+            </div>
+        </div>
+        
+        <!-- Ventana del Carrito -->
+        <div class="ventana" id="ventana-carrito">
+            <h2 class="mb-4"><i class="fas fa-shopping-cart me-2"></i>Tu Carrito</h2>
+            <div id="items-carrito" class="mb-3">
+                <!-- Productos del carrito -->
+            </div>
+            <div class="border-top pt-3">
+                <div class="d-flex justify-content-between mb-3">
+                    <h4>Total:</h4>
+                    <h4 id="total-carrito">$0</h4>
+                </div>
+                <button class="btn w-100" style="background-color: var(--cafe-oscuro); color: white;">
+                    Finalizar Compra
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sistema de Usuarios (LocalStorage)
+        const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+        let usuarioActual = null;
+        
+        // Registrar nuevo usuario
+        document.getElementById('formRegistro').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const inputs = this.querySelectorAll('input');
+            const [nombre, email, password, confirmPass] = Array.from(inputs).map(i => i.value);
+            
+            if (password !== confirmPass) {
+                alert('Las contraseñas no coinciden');
+                return;
+            }
+            
+            if (usuarios.some(u => u.email === email)) {
+                alert('Este email ya está registrado');
+                return;
+            }
+            
+            const nuevoUsuario = { nombre, email, password };
+            usuarios.push(nuevoUsuario);
+            localStorage.setItem('usuarios', JSON.stringify(usuarios));
+            
+            alert('¡Registro exitoso! Ahora puedes iniciar sesión');
+            document.querySelector('#authTabs .nav-link').click(); // Cambia a pestaña de login
+            this.reset();
+        });
+        
+        // Iniciar sesión
+        document.getElementById('formLogin').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = this.querySelector('input[type="email"]').value;
+            const password = this.querySelector('input[type="password"]').value;
+            
+            const usuario = usuarios.find(u => u.email === email && u.password === password);
+            
+            if (usuario) {
+                usuarioActual = usuario;
+                document.getElementById('ventana-inicio').style.display = 'none';
+                document.getElementById('app-principal').style.display = 'block';
+                document.getElementById('nombre-usuario').textContent = usuario.nombre;
+            } else {
+                alert('Email o contraseña incorrectos');
+            }
+        });
+        
+        // Cerrar sesión
+        document.getElementById('btn-logout').addEventListener('click', function() {
+            usuarioActual = null;
+            document.getElementById('app-principal').style.display = 'none';
+            document.getElementById('ventana-inicio').style.display = 'block';
+        });
+        
+        // Sistema de Carrito
+        let carrito = [];
+        
+        // Navegación entre ventanas
+        document.querySelectorAll('[data-ventana]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const ventanaId = this.getAttribute('data-ventana');
+                
+                document.querySelectorAll('.ventana').forEach(v => {
+                    v.classList.remove('ventana-activa');
+                });
+                
+                document.getElementById(`ventana-${ventanaId}`).classList.add('ventana-activa');
+                
+                document.querySelectorAll('.nav-link').forEach(nav => {
+                    nav.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+        
+        // Añadir al carrito
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('agregar-carrito')) {
+                const producto = e.target.getAttribute('data-producto');
+                const precio = parseInt(e.target.getAttribute('data-precio'));
+                const imagen = e.target.getAttribute('data-imagen');
+                
+                carrito.push({ producto, precio, imagen });
+                actualizarCarrito();
+                
+                // Feedback visual
+                e.target.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    e.target.innerHTML = '<i class="fas fa-plus"></i>';
+                }, 1000);
+            }
+            
+            // Eliminar del carrito
+            if (e.target.classList.contains('eliminar-item')) {
+                const index = e.target.closest('.item-carrito').getAttribute('data-index');
+                carrito.splice(index, 1);
+                actualizarCarrito();
+            }
+        });
+        
+        // Actualizar carrito
+        function actualizarCarrito() {
+            const contador = document.getElementById('contador-carrito');
+            const itemsContainer = document.getElementById('items-carrito');
+            const totalContainer = document.getElementById('total-carrito');
+            
+            contador.textContent = carrito.length;
+            
+            if (carrito.length === 0) {
+                itemsContainer.innerHTML = '<div class="alert alert-info">Tu carrito está vacío</div>';
+            } else {
+                itemsContainer.innerHTML = '';
+                carrito.forEach((item, index) => {
+                    itemsContainer.innerHTML += `
+                        <div class="item-carrito d-flex align-items-center mb-3 p-3 border rounded" data-index="${index}">
+                            <img src="${item.imagen}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;" class="me-3">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">${item.producto}</h6>
+                                <small>$${item.precio.toLocaleString()}</small>
+                            </div>
+                            <button class="btn btn-sm btn-danger eliminar-item">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+            
+            const total = carrito.reduce((sum, item) => sum + item.precio, 0);
+            totalContainer.textContent = `$${total.toLocaleString()}`;
+        }
+        
+        // Sistema de Comentarios
+        document.getElementById('form-comentario').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!usuarioActual) return;
+            
+            const texto = this.querySelector('textarea').value;
+            const comentario = {
+                usuario: usuarioActual.nombre,
+                texto,
+                fecha: new Date().toLocaleString()
+            };
+            
+            const comentarios = JSON.parse(localStorage.getItem('comentarios')) || [];
+            comentarios.unshift(comentario);
+            localStorage.setItem('comentarios', JSON.stringify(comentarios));
+            
+            mostrarComentarios();
+            this.reset();
+            alert('¡Comentario enviado!');
+        });
+        
+        // Mostrar comentarios
+        function mostrarComentarios() {
+            const comentarios = JSON.parse(localStorage.getItem('comentarios')) || [];
+            const container = document.getElementById('lista-comentarios');
+            
+            container.innerHTML = comentarios.map(com => `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="mb-0">${com.usuario}</h5>
+                            <small class="text-muted">${com.fecha}</small>
+                        </div>
+                        <p class="mt-2 mb-0">${com.texto}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Cargar comentarios al inicio
+        if (usuarioActual) {
+            mostrarComentarios();
+        }
+    </script>
+</body>
+</html>
